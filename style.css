@@ -1,0 +1,107 @@
+/* Ustawienia globalne */
+body {
+    background-image: url('https://images.unsplash.com/photo-1738430275589-2cd3d0d0d57a?q=80&w=1461&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    font-family: roboto, system-ui;
+    margin: 0;
+    
+    /* Centrum całej zawartości */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 100vh;
+  }
+  
+  /* Główny kontener */
+  #contaner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100vw;
+    min-height: 100vh;
+    box-sizing: border-box;
+  }
+  
+  /* Czas */
+  #time {
+    font-size: 5vh;
+    color: white;
+    margin-bottom: 20px;
+  }
+  
+  /* Wyszukiwarka – wyśrodkowana i o stałej szerokości */
+  #searchBar {
+    width: 310px;           /* Stała szerokość wyszukiwarki */
+    max-width: 90%;         /* Maksymalnie 90% szerokości ekranu na mniejszych urządzeniach */
+    margin: 20px auto 0;     /* Automatyczne marginesy poziome, aby był wycentrowany */
+    padding: 10px;
+    background-color: rgba(28, 28, 30, 0.6);
+    border-radius: 10px;
+    backdrop-filter: blur(20px); /* Efekt blur ograniczony do obszaru wyszukiwarki */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+  }
+  
+  #search-input {
+    padding: 8px;
+    width: 200px;
+    border: 1px solid #a5a5a5;
+    border-radius: 5px;
+  }
+  
+  #search-button {
+    padding: 8px 12px;
+    background-color: #e85900;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.5s ease-in-out;
+  }
+  
+  #search-button:hover {
+    background-color: #e40000;
+  }
+  
+  #search-button:focus {
+    border-color: #0952cf;
+  }
+  
+  /* Sekcja pinned – wyśrodkowana, o stałej szerokości 50vw */
+  #pinned {
+    display: flex;
+    flex-wrap: wrap;          /* Elementy zawijają się do nowego wiersza */
+    justify-content: center;
+    margin: 20px auto;        /* Automatyczne marginesy poziome */
+    padding: 20px;
+    background-color: rgba(28, 28, 30, 0.6);
+    backdrop-filter: blur(20px);
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    width: 50vw;              /* Stała szerokość sekcji pinned */
+    box-sizing: border-box;
+  }
+  
+  /* Pojedyncze elementy pinned */
+  .pinnedItems {
+    margin: 10px;
+    position: relative;
+    display: inline-block;
+    flex: 0 0 auto;
+    box-sizing: border-box;
+  }
+  
+  .pinnedItems img {
+    height: 50px;
+    width: 50px;
+    transition: transform 0.3s ease;
+  }
+  
+  .pinnedItems img:hover {
+    transform: scale(1.1);
+  }  
