@@ -1,146 +1,61 @@
-// -----------------------------------
-// 📌 POMOCNICZE FUNKCJE STORAGE
-// -----------------------------------
-function getPinnedSites() {
-  const data = localStorage.getItem("pinned");
-  return data ? JSON.parse(data) : [];
-}
-function savePinnedSites(list) {
-  localStorage.setItem("pinned", JSON.stringify(list));
-}
-
-// -----------------------------------
-// 📌 PRYPINANIE STRON
-// -----------------------------------
+// Funkcja do dodania przypiętej strony
 function pinSite() {
-  const urlInput = document.getElementById("pinned-url").value.trim();
-  if (!urlInput) return;
-  const list = getPinnedSites();
-  if (!list.includes(urlInput)) {
-    list.push(urlInput);
-    savePinnedSites(list);
-    updatePinnedList();
+  const pinnedUrl = document.getElementById("pinned-url").value.trim();
+
+  // Sprawdzamy, czy URL zaczyna się od "http://" lub "https://"
+  let url = pinnedUrl;
+
+  if (!url.startsWith("http://") && !url.startsWith("https://")) {
+    url = "https://" + url;  // Jeśli nie, dodajemy https://
   }
+
+  // Tworzymy element listy do wyświetlenia przypiętej strony
+  const pinnedItem = document.createElement("li");
+  pinnedItem.innerHTML = `<a href="${url}" target="_blank">${url}</a>`;
+  
+  // Dodajemy przypiętą stronę do listy
+  document.getElementById("pinned-list").appendChild(pinnedItem);
+
+  // Czyszczenie pola input po dodaniu przypiętej strony
+  document.getElementById("pinned-url").value = "";
 }
 
-function removePinnedSite(i) {
-  const list = getPinnedSites();
-  list.splice(i, 1);
-  savePinnedSites(list);
-  updatePinnedList();
-}
-
-function updatePinnedList() {
-  const list = getPinnedSites();
-  const ul = document.getElementById("pinned-list");
-  const sec = document.getElementById("pinned");
-  ul.innerHTML = "";
-  sec.innerHTML = "";
-
-  list.forEach((url, i) => {
-    // w ustawieniach
-    const li = document.createElement("li");
-    li.innerHTML = `
-      <a href="${url}" target="_blank">${url.replace(/^https?:\/\//, "")}</a>
-      <button onclick="removePinnedSite(${i})">❌</button>
-    `;
-    ul.appendChild(li);
-
-    // na stronie głównej
-    const div = document.createElement("div");
-    div.classList.add("pinnedItems");
-    div.innerHTML = `
-      <a href="${url}" target="_blank">
-        <img src="https://www.google.com/s2/favicons?sz=64&domain_url=${url}"
-             alt="icon">
-      </a>
-    `;
-    sec.appendChild(div);
-  });
-}
-
-// -----------------------------------
-// ⏰ CZAS
-// -----------------------------------
-function updateTime() {
-  const el = document.getElementById("timePlaceholder");
-  if (!el) return;
-  const now = new Date();
-  const hh = String(now.getHours()).padStart(2, "0");
-  const mm = String(now.getMinutes()).padStart(2, "0");
-  el.textContent = `${hh}:${mm}`;
-}
-
-// -----------------------------------
-// 🎨 USTAWIENIE TŁA
-// -----------------------------------
-function loadSettings() {
-  const bg = localStorage.getItem("background");
-  if (bg) document.body.style.backgroundImage = `url(${bg})`;
-}
-function handleBackgroundChange(e) {
-  const f = e.target.files[0];
-  if (!f) return;
-  const r = new FileReader();
-  r.onload = ev => {
-    document.body.style.backgroundImage = `url(${ev.target.result})`;
-    localStorage.setItem("background", ev.target.result);
+// Funkcja do resetowania tła
+function updateBackground() {
+  const file = document.getElementById("background-selector").files[0];
+  const reader = new FileReader();
+  
+  reader.onload = function(e) {
+    document.body.style.backgroundImage = `url(${e.target.result})`;
   };
-  r.readAsDataURL(f);
+  
+  reader.readAsDataURL(file);
 }
 
-// -----------------------------------
-// ⚙️ OTWIERANIE / ZAMYKANIE USTAWIEŃ
-// -----------------------------------
+// Funkcja do resetowania tła na domyślne
+document.getElementById("reset-bg-btn").addEventListener("click", function() {
+  document.body.style.backgroundImage = ''; // Resetuje tło
+});
+
+// Funkcja do otwierania ustawień
 function openSettings() {
   document.getElementById("settings").style.display = "block";
 }
+
+// Funkcja do zamykania ustawień
 function closeSettings() {
   document.getElementById("settings").style.display = "none";
 }
 
-// -----------------------------------
-// 🚀 INICJALIZACJA
-// -----------------------------------
-document.addEventListener("DOMContentLoaded", () => {
-  // 1) Załaduj tło, przypięte strony i czas
-  loadSettings();
-  updatePinnedList();
-  updateTime();
-  setInterval(updateTime, 1000);
+// Funkcja do aktualizacji czasu
+function updateTime() {
+  const timeElement = document.getElementById("time");
+  const date = new Date();
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  timeElement.innerHTML = `${hours}:${minutes}`;
+}
 
-  // 2) Obsługa zmiany tła
-  document
-    .getElementById("background-selector")
-    .addEventListener("change", handleBackgroundChange);
-
-  // 3) Checkboxy do pokazywania/ukrywania sekcji
-  document
-    .getElementById("pinned-checkbox")
-    .addEventListener("change", e =>
-      document.getElementById("pinned").style.display =
-        e.target.checked ? "flex" : "none"
-    );
-  document
-    .getElementById("searchBar-checkbox")
-    .addEventListener("change", e =>
-      document.getElementById("searchBar").style.display =
-        e.target.checked ? "block" : "none"
-    );
-  document
-    .getElementById("time-checkbox")
-    .addEventListener("change", e =>
-      document.getElementById("time").style.display =
-        e.target.checked ? "block" : "none"
-    );
-
-  // 4) Przycisk otwierania dotyczący ustawień
-  document
-    .getElementById("settingsBtn")
-    .addEventListener("click", openSettings);
-
-  // 5) Przycisk zamykania
-  document
-    .getElementById("settingsCloseBtn")
-    .addEventListener("click", closeSettings);
-});
+// Aktualizacja czasu co minutę
+setInterval(updateTime, 60000);
+updateTime(); // Wywołanie funkcji po załadowaniu strony
