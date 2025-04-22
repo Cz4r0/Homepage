@@ -1,104 +1,146 @@
-// Czas – aktualizacja co sekundę
-function updateTime() {
-  const now = new Date();
-  const timeString = now.toLocaleTimeString();
-  const timeElement = document.getElementById('time');
-  timeElement.textContent = timeString;
-
-  // Automatyczna zmiana koloru tekstu w zależności od jasności tła
-  const bgColor = window.getComputedStyle(document.body).backgroundImage;
-  const img = new Image();
-  img.src = bgColor.slice(5, -2);
-  img.crossOrigin = "Anonymous";
-  img.onload = function () {
-    const canvas = document.createElement('canvas');
-    canvas.width = canvas.height = 1;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(img, 0, 0, 1, 1);
-    const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
-    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-    timeElement.style.color = brightness > 128 ? 'black' : 'white';
-  };
+// -----------------------------------
+// 📌 POMOCNICZE FUNKCJE STORAGE
+// -----------------------------------
+function getPinnedSites() {
+  const data = localStorage.getItem("pinned");
+  return data ? JSON.parse(data) : [];
 }
-setInterval(updateTime, 1000);
-updateTime();
-
-// Ustawienia – otwieranie i zamykanie
-document.getElementById('settingsBtn').addEventListener('click', () => {
-  document.getElementById('settings').style.display = 'block';
-});
-document.getElementById('settingsCloseBtn').addEventListener('click', () => {
-  document.getElementById('settings').style.display = 'none';
-});
-
-// Zmiana tła
-const bgInput = document.getElementById('bgInput');
-bgInput.addEventListener('change', () => {
-  const file = bgInput.files[0];
-  const reader = new FileReader();
-  reader.onload = function (e) {
-    const url = e.target.result;
-    document.body.style.backgroundImage = `url('${url}')`;
-    localStorage.setItem('customBackground', url);
-  };
-  if (file) reader.readAsDataURL(file);
-});
-
-// Resetowanie tła
-document.getElementById('resetBackgroundBtn').addEventListener('click', () => {
-  localStorage.removeItem('customBackground');
-  document.body.style.backgroundImage = "url('https://images.unsplash.com/photo-1738430275589-2cd3d0d0d57a?q=80&w=1461&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')";
-});
-
-// Wczytanie tła z localStorage
-const savedBg = localStorage.getItem('customBackground');
-if (savedBg) {
-  document.body.style.backgroundImage = `url('${savedBg}')`;
+function savePinnedSites(list) {
+  localStorage.setItem("pinned", JSON.stringify(list));
 }
 
-// Przypinanie elementów
-let pinnedItems = JSON.parse(localStorage.getItem('pinnedItems')) || [];
+// -----------------------------------
+// 📌 PRYPINANIE STRON
+// -----------------------------------
+function pinSite() {
+  const urlInput = document.getElementById("pinned-url").value.trim();
+  if (!urlInput) return;
+  const list = getPinnedSites();
+  if (!list.includes(urlInput)) {
+    list.push(urlInput);
+    savePinnedSites(list);
+    updatePinnedList();
+  }
+}
 
-function displayPinnedItems() {
-  const pinnedContainer = document.getElementById('pinned');
-  pinnedContainer.innerHTML = '';
-  pinnedItems.forEach((item, index) => {
-    const link = document.createElement('a');
-    link.href = item.url;
-    link.target = '_blank';
-    link.classList.add('pinnedItems');
+function removePinnedSite(i) {
+  const list = getPinnedSites();
+  list.splice(i, 1);
+  savePinnedSites(list);
+  updatePinnedList();
+}
 
-    const img = document.createElement('img');
-    img.src = item.icon;
-    img.alt = item.name;
-    img.title = item.name;
+function updatePinnedList() {
+  const list = getPinnedSites();
+  const ul = document.getElementById("pinned-list");
+  const sec = document.getElementById("pinned");
+  ul.innerHTML = "";
+  sec.innerHTML = "";
 
-    link.appendChild(img);
-    pinnedContainer.appendChild(link);
+  list.forEach((url, i) => {
+    // w ustawieniach
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <a href="${url}" target="_blank">${url.replace(/^https?:\/\//, "")}</a>
+      <button onclick="removePinnedSite(${i})">❌</button>
+    `;
+    ul.appendChild(li);
+
+    // na stronie głównej
+    const div = document.createElement("div");
+    div.classList.add("pinnedItems");
+    div.innerHTML = `
+      <a href="${url}" target="_blank">
+        <img src="https://www.google.com/s2/favicons?sz=64&domain_url=${url}"
+             alt="icon">
+      </a>
+    `;
+    sec.appendChild(div);
   });
 }
-displayPinnedItems();
 
-// Dodawanie przypiętych
-document.getElementById('addPinnedBtn').addEventListener('click', () => {
-  let url = document.getElementById('pinned-url').value.trim();
-  const name = document.getElementById('pinned-name').value.trim();
-  const icon = document.getElementById('pinned-icon').value.trim();
+// -----------------------------------
+// ⏰ CZAS
+// -----------------------------------
+function updateTime() {
+  const el = document.getElementById("timePlaceholder");
+  if (!el) return;
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2, "0");
+  const mm = String(now.getMinutes()).padStart(2, "0");
+  el.textContent = `${hh}:${mm}`;
+}
 
-  // Automatyczne dodanie https:// jeśli brak
-  if (!url.startsWith('http://') && !url.startsWith('https://')) {
-    url = 'https://' + url;
-  }
+// -----------------------------------
+// 🎨 USTAWIENIE TŁA
+// -----------------------------------
+function loadSettings() {
+  const bg = localStorage.getItem("background");
+  if (bg) document.body.style.backgroundImage = `url(${bg})`;
+}
+function handleBackgroundChange(e) {
+  const f = e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    document.body.style.backgroundImage = `url(${ev.target.result})`;
+    localStorage.setItem("background", ev.target.result);
+  };
+  r.readAsDataURL(f);
+}
 
-  if (url && name && icon) {
-    const newItem = { url, name, icon };
-    pinnedItems.push(newItem);
-    localStorage.setItem('pinnedItems', JSON.stringify(pinnedItems));
-    displayPinnedItems();
+// -----------------------------------
+// ⚙️ OTWIERANIE / ZAMYKANIE USTAWIEŃ
+// -----------------------------------
+function openSettings() {
+  document.getElementById("settings").style.display = "block";
+}
+function closeSettings() {
+  document.getElementById("settings").style.display = "none";
+}
 
-    // Reset pól formularza
-    document.getElementById('pinned-url').value = '';
-    document.getElementById('pinned-name').value = '';
-    document.getElementById('pinned-icon').value = '';
-  }
+// -----------------------------------
+// 🚀 INICJALIZACJA
+// -----------------------------------
+document.addEventListener("DOMContentLoaded", () => {
+  // 1) Załaduj tło, przypięte strony i czas
+  loadSettings();
+  updatePinnedList();
+  updateTime();
+  setInterval(updateTime, 1000);
+
+  // 2) Obsługa zmiany tła
+  document
+    .getElementById("background-selector")
+    .addEventListener("change", handleBackgroundChange);
+
+  // 3) Checkboxy do pokazywania/ukrywania sekcji
+  document
+    .getElementById("pinned-checkbox")
+    .addEventListener("change", e =>
+      document.getElementById("pinned").style.display =
+        e.target.checked ? "flex" : "none"
+    );
+  document
+    .getElementById("searchBar-checkbox")
+    .addEventListener("change", e =>
+      document.getElementById("searchBar").style.display =
+        e.target.checked ? "block" : "none"
+    );
+  document
+    .getElementById("time-checkbox")
+    .addEventListener("change", e =>
+      document.getElementById("time").style.display =
+        e.target.checked ? "block" : "none"
+    );
+
+  // 4) Przycisk otwierania dotyczący ustawień
+  document
+    .getElementById("settingsBtn")
+    .addEventListener("click", openSettings);
+
+  // 5) Przycisk zamykania
+  document
+    .getElementById("settingsCloseBtn")
+    .addEventListener("click", closeSettings);
 });
