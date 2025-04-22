@@ -7,7 +7,7 @@ body {
     background-repeat: no-repeat;
     font-family: roboto, system-ui;
     margin: 0;
-    
+    position: relative;
     /* Centrum całej zawartości */
     display: flex;
     align-items: center;
@@ -32,6 +32,7 @@ body {
     font-size: 5vh;
     color: white;
     margin-bottom: 20px;
+    isolation: isolate;
   }
   
   /* Wyszukiwarka – wyśrodkowana i o stałej szerokości */
@@ -105,3 +106,63 @@ body {
   .pinnedItems img:hover {
     transform: scale(1.1);
   }  
+
+
+  #settingsBtn{
+    position: fixed;
+    height: 5vh;
+    width: 5vh;
+    border-radius: 4px;
+    background-color: darkslategray;
+    color: white;
+    font-size: 30px;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9;
+  }
+
+  #settingsText{
+    position: absolute;
+    top: -18%;
+    left: 48%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 3vh;
+  }
+
+  #settings{
+    position: fixed;
+    display: none;
+    top: 0;
+    right: 0;
+    width: 30%;
+    height: 100%;
+    color: white;
+    padding: 20px;
+    box-sizing: border-box;
+    backdrop-filter: blur(20px);
+    z-index: 10;
+    background-color: rgba(28, 28, 30, 0.6);
+  }
+
+  #settingsCloseBtn{
+    position: absolute;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    cursor: pointer;
+    color: red;
+    z-index: 11;
+  }
+
+  .pinned {
+    /* Add styles here to show the pinned app */
+    height: 50px;
+    width: 50px;
+    background-color: white;
+  }
+
+  #timePlaceholder {
+    color: white;
+    mix-blend-mode: difference;
+  }

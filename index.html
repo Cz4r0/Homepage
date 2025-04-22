@@ -6,7 +6,6 @@
   <title>Homepage</title>
   <link rel="stylesheet" href="style.css">
   <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/102/102061.png" type="image/gif">
-  <script src="script.js"></script>
 </head>
 <body>
   <div id="contaner">
@@ -23,17 +22,40 @@
     </div>
 
     <div id="pinned">
-      <a class="pinnedItems" href="https://www.youtube.com">
-        <img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube">
-      </a>
-      <a class="pinnedItems" href="https://github.com">
-        <img src="https://cdn-icons-png.flaticon.com/512/25/25231.png" alt="GitHub">
-      </a>
-      <a class="pinnedItems" href="https://discord.com">
-        <img src="https://cdn-icons-png.flaticon.com/512/5968/5968756.png" alt="Discord">
-      </a>
+      
       <!-- Dodaj kolejne elementy pinned według potrzeb -->
     </div>
+
+    <div id="settings">
+      <h1 id="settingsCloseBtn" onclick="closeSettings()">x</h1>
+      <h2>Ustawienia</h2>
+        tło: <input type="file" id="background-selector" accept="image/*" onchange="updateBackground()">
+      <button id="reset-bg-btn">Resetuj tło</button>
+      <br>
+        <h4>Sekcje:</h4>
+        <label for="pinned">Przypięte</label>
+        <input type="checkbox" id="pinned-checkbox" checked>
+        <br>
+        <label for="time">Czas</label>
+        <input type="checkbox" id="time-checkbox" checked>
+        <br>
+        <label for="searchBar">Szukanie</label>
+        <input type="checkbox" id="searchBar-checkbox" checked>
+        <br>
+        <br>
+        <label for="pinned-url">Strona do przypięcia:</label>
+        <input type="url" id="pinned-url" placeholder="https://example.com">
+        <button onclick="pinSite()">Przypnij stronę</button>
+        <br>
+        <h4>przypięte:</h4>
+        <ul id="pinned-list">
+        </ul>
+        <br>
+        <button onclick="closeSettings()">Zamknij Ustawienia</button>
+    </div>
+
+    <div onclick="openSettings()" id="settingsBtn"><p id="settingsText">+</p></div>
   </div>
+  <script src="script.js" defer></script>
 </body>
 </html>
