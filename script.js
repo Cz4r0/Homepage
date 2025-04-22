@@ -1,146 +1,87 @@
-// -----------------------------------
-// 📌 POMOCNICZE FUNKCJE STORAGE
-// -----------------------------------
-function getPinnedSites() {
-  const data = localStorage.getItem("pinned");
-  return data ? JSON.parse(data) : [];
-}
-function savePinnedSites(list) {
-  localStorage.setItem("pinned", JSON.stringify(list));
-}
+// --- ZMIENNE GLOBALNE ---
+let pinnedItems = JSON.parse(localStorage.getItem('pinnedItems')) || [];
 
-// -----------------------------------
-// 📌 PRYPINANIE STRON
-// -----------------------------------
-function pinSite() {
-  const urlInput = document.getElementById("pinned-url").value.trim();
-  if (!urlInput) return;
-  const list = getPinnedSites();
-  if (!list.includes(urlInput)) {
-    list.push(urlInput);
-    savePinnedSites(list);
-    updatePinnedList();
+// --- ZEGAR ---
+function updateTime() {
+  const timeElement = document.getElementById('time');
+  const now = new Date();
+  const timeString = now.toLocaleTimeString();
+  timeElement.textContent = timeString;
+
+  // Automatyczna zmiana koloru czasu w zależności od tła
+  const bgColor = window.getComputedStyle(document.body).backgroundImage;
+  if (bgColor.includes('white') || bgColor.includes('wwdc') || getComputedStyle(document.body).backgroundColor === 'rgb(255, 255, 255)') {
+    timeElement.style.color = 'black';
+  } else {
+    timeElement.style.color = 'white';
   }
 }
+setInterval(updateTime, 1000);
+updateTime();
 
-function removePinnedSite(i) {
-  const list = getPinnedSites();
-  list.splice(i, 1);
-  savePinnedSites(list);
-  updatePinnedList();
+// --- WYŚWIETLANIE PRZYPINANYCH ---
+function displayPinnedItems() {
+  const pinnedContainer = document.getElementById('pinned');
+  pinnedContainer.innerHTML = '';
+  pinnedItems.forEach((item, index) => {
+    const element = document.createElement('div');
+    element.className = 'pinnedItems';
+    element.innerHTML = `<a href="${item.url}" target="_blank"><img src="${item.icon}" alt="${item.name}" title="${item.name}"></a>`;
+    pinnedContainer.appendChild(element);
+  });
 }
+displayPinnedItems();
 
-function updatePinnedList() {
-  const list = getPinnedSites();
-  const ul = document.getElementById("pinned-list");
-  const sec = document.getElementById("pinned");
-  ul.innerHTML = "";
-  sec.innerHTML = "";
+// --- PRZYCISK USTAWIEŃ ---
+document.getElementById('settingsBtn').addEventListener('click', () => {
+  document.getElementById('settings').style.display = 'block';
+});
+document.getElementById('settingsCloseBtn').addEventListener('click', () => {
+  document.getElementById('settings').style.display = 'none';
+});
 
-  list.forEach((url, i) => {
-    // w ustawieniach
-    const li = document.createElement("li");
-    li.innerHTML = `
-      <a href="${url}" target="_blank">${url.replace(/^https?:\/\//, "")}</a>
-      <button onclick="removePinnedSite(${i})">❌</button>
-    `;
-    ul.appendChild(li);
-
-    // na stronie głównej
-    const div = document.createElement("div");
-    div.classList.add("pinnedItems");
-    div.innerHTML = `
-      <a href="${url}" target="_blank">
-        <img src="https://www.google.com/s2/favicons?sz=64&domain_url=${url}"
-             alt="icon">
-      </a>
-    `;
-    sec.appendChild(div);
+// --- ZMIANA TŁA ---
+const bgInput = document.getElementById('bg-url');
+if (bgInput) {
+  bgInput.addEventListener('change', () => {
+    const newBg = bgInput.value.trim();
+    if (newBg) {
+      document.body.style.backgroundImage = `url('${newBg}')`;
+      localStorage.setItem('bgImage', newBg);
+    }
   });
 }
 
-// -----------------------------------
-// ⏰ CZAS
-// -----------------------------------
-function updateTime() {
-  const el = document.getElementById("timePlaceholder");
-  if (!el) return;
-  const now = new Date();
-  const hh = String(now.getHours()).padStart(2, "0");
-  const mm = String(now.getMinutes()).padStart(2, "0");
-  el.textContent = `${hh}:${mm}`;
+// --- RESET TŁA ---
+document.getElementById('reset-bg-btn').addEventListener('click', () => {
+  localStorage.removeItem('bgImage');
+  location.reload();
+});
+
+// --- PRZYWRACANIE TŁA Z LOCALSTORAGE ---
+const savedBg = localStorage.getItem('bgImage');
+if (savedBg) {
+  document.body.style.backgroundImage = `url('${savedBg}')`;
 }
 
-// -----------------------------------
-// 🎨 USTAWIENIE TŁA
-// -----------------------------------
-function loadSettings() {
-  const bg = localStorage.getItem("background");
-  if (bg) document.body.style.backgroundImage = `url(${bg})`;
-}
-function handleBackgroundChange(e) {
-  const f = e.target.files[0];
-  if (!f) return;
-  const r = new FileReader();
-  r.onload = ev => {
-    document.body.style.backgroundImage = `url(${ev.target.result})`;
-    localStorage.setItem("background", ev.target.result);
-  };
-  r.readAsDataURL(f);
-}
+// --- DODAWANIE PRZYPINANEJ STRONY ---
+document.getElementById('addPinnedBtn').addEventListener('click', () => {
+  const url = document.getElementById('pinned-url').value.trim();
+  const name = document.getElementById('pinned-name').value.trim();
+  const icon = document.getElementById('pinned-icon').value.trim();
 
-// -----------------------------------
-// ⚙️ OTWIERANIE / ZAMYKANIE USTAWIEŃ
-// -----------------------------------
-function openSettings() {
-  document.getElementById("settings").style.display = "block";
-}
-function closeSettings() {
-  document.getElementById("settings").style.display = "none";
-}
+  // Automatyczne dodanie https://
+  const formattedUrl = url.startsWith('http://') || url.startsWith('https://') ? url : `https://${url}`;
 
-// -----------------------------------
-// 🚀 INICJALIZACJA
-// -----------------------------------
-document.addEventListener("DOMContentLoaded", () => {
-  // 1) Załaduj tło, przypięte strony i czas
-  loadSettings();
-  updatePinnedList();
-  updateTime();
-  setInterval(updateTime, 1000);
+  if (url && name && icon) {
+    const newItem = { url: formattedUrl, name, icon };
+    pinnedItems.push(newItem);
+    localStorage.setItem('pinnedItems', JSON.stringify(pinnedItems));
+    displayPinnedItems();
 
-  // 2) Obsługa zmiany tła
-  document
-    .getElementById("background-selector")
-    .addEventListener("change", handleBackgroundChange);
-
-  // 3) Checkboxy do pokazywania/ukrywania sekcji
-  document
-    .getElementById("pinned-checkbox")
-    .addEventListener("change", e =>
-      document.getElementById("pinned").style.display =
-        e.target.checked ? "flex" : "none"
-    );
-  document
-    .getElementById("searchBar-checkbox")
-    .addEventListener("change", e =>
-      document.getElementById("searchBar").style.display =
-        e.target.checked ? "block" : "none"
-    );
-  document
-    .getElementById("time-checkbox")
-    .addEventListener("change", e =>
-      document.getElementById("time").style.display =
-        e.target.checked ? "block" : "none"
-    );
-
-  // 4) Przycisk otwierania dotyczący ustawień
-  document
-    .getElementById("settingsBtn")
-    .addEventListener("click", openSettings);
-
-  // 5) Przycisk zamykania
-  document
-    .getElementById("settingsCloseBtn")
-    .addEventListener("click", closeSettings);
+    // Resetuj pola
+    document.getElementById('pinned-url').value = '';
+    document.getElementById('pinned-name').value = '';
+    document.getElementById('pinned-icon').value = '';
+  }
 });
